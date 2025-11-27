@@ -9,12 +9,13 @@ import (
 
 // RelationshipService handles relationship business logic
 type RelationshipService struct {
-	repo repository.RelationshipRepository
+	repo     repository.RelationshipRepository
+	nodeRepo repository.NodeRepository
 }
 
 // NewRelationshipService creates a new RelationshipService
-func NewRelationshipService(repo repository.RelationshipRepository) *RelationshipService {
-	return &RelationshipService{repo: repo}
+func NewRelationshipService(repo repository.RelationshipRepository, nodeRepo repository.NodeRepository) *RelationshipService {
+	return &RelationshipService{repo: repo, nodeRepo: nodeRepo}
 }
 
 // Create creates a new relationship
@@ -30,6 +31,24 @@ func (s *RelationshipService) Create(ctx context.Context, tenantID, sourceNodeID
 	}
 	if relType == "" {
 		return nil, fmt.Errorf("relationship_type is required")
+	}
+
+	// Validate that the source node belongs to the same tenant
+	sourceNode, err := s.nodeRepo.GetByID(ctx, tenantID, sourceNodeID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid source_node_id: node not found or does not belong to this tenant")
+	}
+	if sourceNode.TenantID != tenantID {
+		return nil, fmt.Errorf("invalid source_node_id: node does not belong to this tenant")
+	}
+
+	// Validate that the target node belongs to the same tenant
+	targetNode, err := s.nodeRepo.GetByID(ctx, tenantID, targetNodeID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid target_node_id: node not found or does not belong to this tenant")
+	}
+	if targetNode.TenantID != tenantID {
+		return nil, fmt.Errorf("invalid target_node_id: node does not belong to this tenant")
 	}
 
 	rel := &repository.Relationship{

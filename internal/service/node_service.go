@@ -9,12 +9,13 @@ import (
 
 // NodeService handles node business logic
 type NodeService struct {
-	repo repository.NodeRepository
+	repo         repository.NodeRepository
+	nodeTypeRepo repository.NodeTypeRepository
 }
 
 // NewNodeService creates a new NodeService
-func NewNodeService(repo repository.NodeRepository) *NodeService {
-	return &NodeService{repo: repo}
+func NewNodeService(repo repository.NodeRepository, nodeTypeRepo repository.NodeTypeRepository) *NodeService {
+	return &NodeService{repo: repo, nodeTypeRepo: nodeTypeRepo}
 }
 
 // Create creates a new node
@@ -24,6 +25,15 @@ func (s *NodeService) Create(ctx context.Context, tenantID, nodeTypeID, data str
 	}
 	if nodeTypeID == "" {
 		return nil, fmt.Errorf("node_type_id is required")
+	}
+
+	// Validate that the node type belongs to the same tenant
+	nodeType, err := s.nodeTypeRepo.GetByID(ctx, tenantID, nodeTypeID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid node_type_id: node type not found or does not belong to this tenant")
+	}
+	if nodeType.TenantID != tenantID {
+		return nil, fmt.Errorf("invalid node_type_id: node type does not belong to this tenant")
 	}
 
 	node := &repository.Node{

@@ -52,8 +52,8 @@ func main() {
 	tenantSvc := service.NewTenantService(tenantRepo)
 	userSvc := service.NewUserService(userRepo)
 	nodeTypeSvc := service.NewNodeTypeService(nodeTypeRepo)
-	nodeSvc := service.NewNodeService(nodeRepo)
-	relationshipSvc := service.NewRelationshipService(relationshipRepo)
+	nodeSvc := service.NewNodeService(nodeRepo, nodeTypeRepo)
+	relationshipSvc := service.NewRelationshipService(relationshipRepo, nodeRepo)
 
 	// Initialize gRPC handlers
 	tenantHandler := grpchandlers.NewTenantHandler(tenantSvc)
