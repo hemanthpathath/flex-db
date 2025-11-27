@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pb "github.com/hemanthpathath/flexy-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
 	"github.com/hemanthpathath/flexy-db/internal/repository"
 	"github.com/hemanthpathath/flexy-db/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +25,7 @@ func NewNodeTypeHandler(svc *service.NodeTypeService) *NodeTypeHandler {
 func (h *NodeTypeHandler) CreateNodeType(ctx context.Context, req *pb.CreateNodeTypeRequest) (*pb.CreateNodeTypeResponse, error) {
 	nodeType, err := h.svc.Create(ctx, req.TenantId, req.Name, req.Description, req.Schema)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.CreateNodeTypeResponse{
@@ -36,7 +37,7 @@ func (h *NodeTypeHandler) CreateNodeType(ctx context.Context, req *pb.CreateNode
 func (h *NodeTypeHandler) GetNodeType(ctx context.Context, req *pb.GetNodeTypeRequest) (*pb.GetNodeTypeResponse, error) {
 	nodeType, err := h.svc.GetByID(ctx, req.TenantId, req.Id)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.GetNodeTypeResponse{
@@ -48,7 +49,7 @@ func (h *NodeTypeHandler) GetNodeType(ctx context.Context, req *pb.GetNodeTypeRe
 func (h *NodeTypeHandler) UpdateNodeType(ctx context.Context, req *pb.UpdateNodeTypeRequest) (*pb.UpdateNodeTypeResponse, error) {
 	nodeType, err := h.svc.Update(ctx, req.TenantId, req.Id, req.Name, req.Description, req.Schema)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.UpdateNodeTypeResponse{
@@ -59,7 +60,7 @@ func (h *NodeTypeHandler) UpdateNodeType(ctx context.Context, req *pb.UpdateNode
 // DeleteNodeType deletes a node type
 func (h *NodeTypeHandler) DeleteNodeType(ctx context.Context, req *pb.DeleteNodeTypeRequest) (*pb.DeleteNodeTypeResponse, error) {
 	if err := h.svc.Delete(ctx, req.TenantId, req.Id); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.DeleteNodeTypeResponse{}, nil
@@ -79,7 +80,7 @@ func (h *NodeTypeHandler) ListNodeTypes(ctx context.Context, req *pb.ListNodeTyp
 
 	nodeTypes, result, err := h.svc.List(ctx, req.TenantId, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbNodeTypes := make([]*pb.NodeType, len(nodeTypes))

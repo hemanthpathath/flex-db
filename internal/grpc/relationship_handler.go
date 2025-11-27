@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pb "github.com/hemanthpathath/flexy-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
 	"github.com/hemanthpathath/flexy-db/internal/repository"
 	"github.com/hemanthpathath/flexy-db/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +25,7 @@ func NewRelationshipHandler(svc *service.RelationshipService) *RelationshipHandl
 func (h *RelationshipHandler) CreateRelationship(ctx context.Context, req *pb.CreateRelationshipRequest) (*pb.CreateRelationshipResponse, error) {
 	rel, err := h.svc.Create(ctx, req.TenantId, req.SourceNodeId, req.TargetNodeId, req.RelationshipType, req.Data)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.CreateRelationshipResponse{
@@ -36,7 +37,7 @@ func (h *RelationshipHandler) CreateRelationship(ctx context.Context, req *pb.Cr
 func (h *RelationshipHandler) GetRelationship(ctx context.Context, req *pb.GetRelationshipRequest) (*pb.GetRelationshipResponse, error) {
 	rel, err := h.svc.GetByID(ctx, req.TenantId, req.Id)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.GetRelationshipResponse{
@@ -48,7 +49,7 @@ func (h *RelationshipHandler) GetRelationship(ctx context.Context, req *pb.GetRe
 func (h *RelationshipHandler) UpdateRelationship(ctx context.Context, req *pb.UpdateRelationshipRequest) (*pb.UpdateRelationshipResponse, error) {
 	rel, err := h.svc.Update(ctx, req.TenantId, req.Id, req.RelationshipType, req.Data)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.UpdateRelationshipResponse{
@@ -59,7 +60,7 @@ func (h *RelationshipHandler) UpdateRelationship(ctx context.Context, req *pb.Up
 // DeleteRelationship deletes a relationship
 func (h *RelationshipHandler) DeleteRelationship(ctx context.Context, req *pb.DeleteRelationshipRequest) (*pb.DeleteRelationshipResponse, error) {
 	if err := h.svc.Delete(ctx, req.TenantId, req.Id); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.DeleteRelationshipResponse{}, nil
@@ -79,7 +80,7 @@ func (h *RelationshipHandler) ListRelationships(ctx context.Context, req *pb.Lis
 
 	rels, result, err := h.svc.List(ctx, req.TenantId, req.SourceNodeId, req.TargetNodeId, req.RelationshipType, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbRels := make([]*pb.Relationship, len(rels))

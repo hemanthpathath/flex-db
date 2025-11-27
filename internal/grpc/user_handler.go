@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pb "github.com/hemanthpathath/flexy-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
 	"github.com/hemanthpathath/flexy-db/internal/repository"
 	"github.com/hemanthpathath/flexy-db/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +25,7 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	user, err := h.svc.Create(ctx, req.Email, req.DisplayName)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.CreateUserResponse{
@@ -36,7 +37,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	user, err := h.svc.GetByID(ctx, req.Id)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.GetUserResponse{
@@ -48,7 +49,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	user, err := h.svc.Update(ctx, req.Id, req.Email, req.DisplayName)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.UpdateUserResponse{
@@ -59,7 +60,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 // DeleteUser deletes a user
 func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
 	if err := h.svc.Delete(ctx, req.Id); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.DeleteUserResponse{}, nil
@@ -79,7 +80,7 @@ func (h *UserHandler) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (
 
 	users, result, err := h.svc.List(ctx, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbUsers := make([]*pb.User, len(users))
@@ -100,7 +101,7 @@ func (h *UserHandler) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (
 func (h *UserHandler) AddUserToTenant(ctx context.Context, req *pb.AddUserToTenantRequest) (*pb.AddUserToTenantResponse, error) {
 	tenantUser, err := h.svc.AddToTenant(ctx, req.TenantId, req.UserId, req.Role)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.AddUserToTenantResponse{
@@ -111,7 +112,7 @@ func (h *UserHandler) AddUserToTenant(ctx context.Context, req *pb.AddUserToTena
 // RemoveUserFromTenant removes a user from a tenant
 func (h *UserHandler) RemoveUserFromTenant(ctx context.Context, req *pb.RemoveUserFromTenantRequest) (*pb.RemoveUserFromTenantResponse, error) {
 	if err := h.svc.RemoveFromTenant(ctx, req.TenantId, req.UserId); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.RemoveUserFromTenantResponse{}, nil
@@ -131,7 +132,7 @@ func (h *UserHandler) ListTenantUsers(ctx context.Context, req *pb.ListTenantUse
 
 	tenantUsers, result, err := h.svc.ListTenantUsers(ctx, req.TenantId, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbTenantUsers := make([]*pb.TenantUser, len(tenantUsers))

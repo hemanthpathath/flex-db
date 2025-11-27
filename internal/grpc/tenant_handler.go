@@ -2,13 +2,11 @@ package grpc
 
 import (
 	"context"
-	"errors"
 
 	pb "github.com/hemanthpathath/flexy-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
 	"github.com/hemanthpathath/flexy-db/internal/repository"
 	"github.com/hemanthpathath/flexy-db/internal/service"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -27,7 +25,7 @@ func NewTenantHandler(svc *service.TenantService) *TenantHandler {
 func (h *TenantHandler) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) (*pb.CreateTenantResponse, error) {
 	tenant, err := h.svc.Create(ctx, req.Slug, req.Name)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.CreateTenantResponse{
@@ -39,7 +37,7 @@ func (h *TenantHandler) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 func (h *TenantHandler) GetTenant(ctx context.Context, req *pb.GetTenantRequest) (*pb.GetTenantResponse, error) {
 	tenant, err := h.svc.GetByID(ctx, req.Id)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.GetTenantResponse{
@@ -51,7 +49,7 @@ func (h *TenantHandler) GetTenant(ctx context.Context, req *pb.GetTenantRequest)
 func (h *TenantHandler) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRequest) (*pb.UpdateTenantResponse, error) {
 	tenant, err := h.svc.Update(ctx, req.Id, req.Slug, req.Name, req.Status)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.UpdateTenantResponse{
@@ -62,7 +60,7 @@ func (h *TenantHandler) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRe
 // DeleteTenant deletes a tenant
 func (h *TenantHandler) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRequest) (*pb.DeleteTenantResponse, error) {
 	if err := h.svc.Delete(ctx, req.Id); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.DeleteTenantResponse{}, nil
@@ -82,7 +80,7 @@ func (h *TenantHandler) ListTenants(ctx context.Context, req *pb.ListTenantsRequ
 
 	tenants, result, err := h.svc.List(ctx, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbTenants := make([]*pb.Tenant, len(tenants))
@@ -109,39 +107,4 @@ func tenantToProto(t *repository.Tenant) *pb.Tenant {
 		CreatedAt: timestamppb.New(t.CreatedAt),
 		UpdatedAt: timestamppb.New(t.UpdatedAt),
 	}
-}
-
-// mapError converts domain errors to gRPC status errors
-func mapError(err error) error {
-	if errors.Is(err, repository.ErrNotFound) {
-		return status.Error(codes.NotFound, err.Error())
-	}
-	// Check for validation errors
-	if err != nil && (containsAny(err.Error(), "required", "invalid")) {
-		return status.Error(codes.InvalidArgument, err.Error())
-	}
-	return status.Error(codes.Internal, err.Error())
-}
-
-// containsAny checks if the string contains any of the substrings
-func containsAny(s string, substrs ...string) bool {
-	for _, substr := range substrs {
-		if contains(s, substr) {
-			return true
-		}
-	}
-	return false
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsAt(s, substr))
-}
-
-func containsAt(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

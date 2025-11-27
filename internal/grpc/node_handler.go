@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pb "github.com/hemanthpathath/flexy-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
 	"github.com/hemanthpathath/flexy-db/internal/repository"
 	"github.com/hemanthpathath/flexy-db/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +25,7 @@ func NewNodeHandler(svc *service.NodeService) *NodeHandler {
 func (h *NodeHandler) CreateNode(ctx context.Context, req *pb.CreateNodeRequest) (*pb.CreateNodeResponse, error) {
 	node, err := h.svc.Create(ctx, req.TenantId, req.NodeTypeId, req.Data)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.CreateNodeResponse{
@@ -36,7 +37,7 @@ func (h *NodeHandler) CreateNode(ctx context.Context, req *pb.CreateNodeRequest)
 func (h *NodeHandler) GetNode(ctx context.Context, req *pb.GetNodeRequest) (*pb.GetNodeResponse, error) {
 	node, err := h.svc.GetByID(ctx, req.TenantId, req.Id)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.GetNodeResponse{
@@ -48,7 +49,7 @@ func (h *NodeHandler) GetNode(ctx context.Context, req *pb.GetNodeRequest) (*pb.
 func (h *NodeHandler) UpdateNode(ctx context.Context, req *pb.UpdateNodeRequest) (*pb.UpdateNodeResponse, error) {
 	node, err := h.svc.Update(ctx, req.TenantId, req.Id, req.Data)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.UpdateNodeResponse{
@@ -59,7 +60,7 @@ func (h *NodeHandler) UpdateNode(ctx context.Context, req *pb.UpdateNodeRequest)
 // DeleteNode deletes a node
 func (h *NodeHandler) DeleteNode(ctx context.Context, req *pb.DeleteNodeRequest) (*pb.DeleteNodeResponse, error) {
 	if err := h.svc.Delete(ctx, req.TenantId, req.Id); err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	return &pb.DeleteNodeResponse{}, nil
@@ -79,7 +80,7 @@ func (h *NodeHandler) ListNodes(ctx context.Context, req *pb.ListNodesRequest) (
 
 	nodes, result, err := h.svc.List(ctx, req.TenantId, req.NodeTypeId, pageSize, pageToken)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, grpcerrors.MapError(err)
 	}
 
 	pbNodes := make([]*pb.Node, len(nodes))
