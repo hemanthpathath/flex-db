@@ -1,3 +1,31 @@
+# Go binaries and build artifacts
+/dbaas-server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test binary
+*.test
+
+# Go coverage
+*.out
+coverage.html
+
+# Go vendor directory (if using vendoring)
+# vendor/
+
+# IDE and editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local environment files
+.env
+.env.local
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
