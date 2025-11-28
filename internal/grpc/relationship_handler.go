@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 
-	pb "github.com/hemanthpathath/flexy-db/api/proto"
-	grpcerrors "github.com/hemanthpathath/flexy-db/internal/grpc/errors"
-	"github.com/hemanthpathath/flexy-db/internal/repository"
-	"github.com/hemanthpathath/flexy-db/internal/service"
+	pb "github.com/hemanthpathath/flex-db/api/proto"
+	grpcerrors "github.com/hemanthpathath/flex-db/internal/grpc/errors"
+	"github.com/hemanthpathath/flex-db/internal/repository"
+	"github.com/hemanthpathath/flex-db/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -1,4 +1,4 @@
-module github.com/hemanthpathath/flexy-db
+module github.com/hemanthpathath/flex-db
 
 go 1.24.10
 

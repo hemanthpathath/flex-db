@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hemanthpathath/flexy-db/internal/repository"
+	"github.com/hemanthpathath/flex-db/internal/repository"
 )
 
 // TenantService handles tenant business logic

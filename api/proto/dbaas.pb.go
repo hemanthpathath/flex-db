@@ -3718,7 +3718,7 @@ const file_api_proto_dbaas_proto_rawDesc = "" +
 	"\x0fGetRelationship\x12\x1d.dbaas.GetRelationshipRequest\x1a\x1e.dbaas.GetRelationshipResponse\x12Y\n" +
 	"\x12UpdateRelationship\x12 .dbaas.UpdateRelationshipRequest\x1a!.dbaas.UpdateRelationshipResponse\x12Y\n" +
 	"\x12DeleteRelationship\x12 .dbaas.DeleteRelationshipRequest\x1a!.dbaas.DeleteRelationshipResponse\x12V\n" +
-	"\x11ListRelationships\x12\x1f.dbaas.ListRelationshipsRequest\x1a .dbaas.ListRelationshipsResponseB.Z,github.com/hemanthpathath/flexy-db/api/protob\x06proto3"
+	"\x11ListRelationships\x12\x1f.dbaas.ListRelationshipsRequest\x1a .dbaas.ListRelationshipsResponseB.Z,github.com/hemanthpathath/flex-db/api/protob\x06proto3"
 
 var (
 	file_api_proto_dbaas_proto_rawDescOnce sync.Once

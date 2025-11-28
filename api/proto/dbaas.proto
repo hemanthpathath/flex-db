@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package dbaas;
 
-option go_package = "github.com/hemanthpathath/flexy-db/api/proto";
+option go_package = "github.com/hemanthpathath/flex-db/api/proto";
 
 import "google/protobuf/timestamp.proto";
 

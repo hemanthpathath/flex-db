@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"syscall"
 
-	pb "github.com/hemanthpathath/flexy-db/api/proto"
-	"github.com/hemanthpathath/flexy-db/internal/db"
-	grpchandlers "github.com/hemanthpathath/flexy-db/internal/grpc"
-	"github.com/hemanthpathath/flexy-db/internal/repository"
-	"github.com/hemanthpathath/flexy-db/internal/service"
+	pb "github.com/hemanthpathath/flex-db/api/proto"
+	"github.com/hemanthpathath/flex-db/internal/db"
+	grpchandlers "github.com/hemanthpathath/flex-db/internal/grpc"
+	"github.com/hemanthpathath/flex-db/internal/repository"
+	"github.com/hemanthpathath/flex-db/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
