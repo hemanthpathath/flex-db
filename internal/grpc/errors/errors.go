@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/hemanthpathath/flexy-db/internal/repository"
+	"github.com/hemanthpathath/flex-db/internal/repository"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

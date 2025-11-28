@@ -33,7 +33,7 @@ A **Database-as-a-Service (DBaaS)** built with Go, gRPC, and PostgreSQL. This se
 ## Project Structure
 
 ```
-flexy-db/
+flex-db/
 ├── api/proto/              # gRPC protobuf definitions
 │   ├── dbaas.proto
 │   ├── dbaas.pb.go         # Generated Go code
