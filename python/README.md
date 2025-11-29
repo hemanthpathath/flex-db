@@ -89,6 +89,71 @@ cp .env.example .env.local
 ./scripts/start.sh
 ```
 
+## Docker Setup
+
+### Building the Docker Image
+
+```bash
+# From the python directory
+docker build -t flex-db-python .
+```
+
+### Running with Docker Compose
+
+The easiest way to run the Python backend with Docker is using docker-compose:
+
+```bash
+# From the python directory
+docker-compose up -d
+```
+
+This will start both the PostgreSQL database and the Python backend together.
+
+### Running Standalone (with existing PostgreSQL)
+
+If you already have PostgreSQL running:
+
+```bash
+# Run the container connecting to host PostgreSQL
+docker run -d \
+  --name flex-db-python \
+  -p 5000:5000 \
+  -e DB_HOST=host.docker.internal \
+  -e DB_PORT=5432 \
+  -e DB_USER=postgres \
+  -e DB_PASSWORD=postgres \
+  -e DB_NAME=dbaas \
+  flex-db-python
+```
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_USER` | `postgres` | PostgreSQL user |
+| `DB_PASSWORD` | `postgres` | PostgreSQL password |
+| `DB_NAME` | `dbaas` | PostgreSQL database name |
+| `DB_SSL_MODE` | `disable` | PostgreSQL SSL mode |
+| `JSONRPC_HOST` | `0.0.0.0` | JSON-RPC server host |
+| `JSONRPC_PORT` | `5000` | JSON-RPC server port |
+
+### Verifying the Container
+
+```bash
+# Check container status
+docker ps
+
+# Check health endpoint
+curl http://localhost:5000/health
+
+# View logs
+docker logs flex-db-python
+```
+
 ## Manual Setup
 
 ### Step 1: Set Up PostgreSQL
