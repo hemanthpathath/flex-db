@@ -1,0 +1,170 @@
+# flex-db Unified Docker Compose
+#
+# This file supports both development and testing workflows:
+#
+# Development (keeps containers running):
+#   docker compose --profile dev up --build
+#
+# Testing (isolated, tears down after tests):
+#   docker compose --profile test up --build --abort-on-container-exit
+#   docker compose --profile test down -v
+#
+# Use the Makefile for convenience:
+#   make setup-dev    - Start development environment
+#   make test-all     - Run all tests in isolation and tear down
+#
+
+services:
+  # PostgreSQL database - for development
+  postgres:
+    image: postgres:14
+    container_name: flex-db-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dbaas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # PostgreSQL for testing - uses tmpfs for faster tests, no persistence
+  postgres-test:
+    image: postgres:14
+    container_name: flex-db-postgres-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dbaas_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - test
+
+  # Go backend (gRPC) - development
+  go-backend:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    container_name: flex-db-go
+    ports:
+      - "50051:50051"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: dbaas
+      DB_SSL_MODE: disable
+      GRPC_PORT: 50051
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # Python backend (JSON-RPC) - development
+  python-backend:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: flex-db-python
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_CONTROL_NAME: dbaas_control
+      DB_TENANT_PREFIX: dbaas_tenant_
+      DB_NAME: dbaas
+      DB_SSL_MODE: disable
+      JSONRPC_HOST: 0.0.0.0
+      JSONRPC_PORT: 5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - dev
+
+  # Test runner - runs integration tests for both backends
+  test-runner:
+    build:
+      context: ./go
+      dockerfile: Dockerfile.test
+    container_name: flex-db-test-runner
+    environment:
+      # Go test database configuration
+      TEST_DB_HOST: postgres-test
+      TEST_DB_PORT: 5432
+      TEST_DB_USER: postgres
+      TEST_DB_PASSWORD: postgres
+      TEST_DB_NAME: dbaas_test
+      TEST_DB_SSL_MODE: disable
+      # Python test configuration
+      PYTHON_TEST_URL: http://python-backend-test:5000
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      python-backend-test:
+        condition: service_healthy
+    profiles:
+      - test
+
+  # Python backend for testing
+  python-backend-test:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: flex-db-python-test
+    environment:
+      DB_HOST: postgres-test
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_CONTROL_NAME: dbaas_control_test
+      DB_TENANT_PREFIX: dbaas_tenant_test_
+      DB_NAME: dbaas_test
+      DB_SSL_MODE: disable
+      JSONRPC_HOST: 0.0.0.0
+      JSONRPC_PORT: 5000
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    profiles:
+      - test
+
+volumes:
+  postgres_data:
