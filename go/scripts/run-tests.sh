@@ -121,7 +121,8 @@ fi
 
 # Test 2: Create tenant
 echo "2. Testing tenant creation..."
-TENANT_RESPONSE=$(jsonrpc_call "create_tenant" '{"slug": "test-tenant-'$(date +%s)'", "name": "Test Tenant"}')
+TIMESTAMP=$(date +%s)
+TENANT_RESPONSE=$(jsonrpc_call "create_tenant" "{\"slug\": \"test-tenant-${TIMESTAMP}\", \"name\": \"Test Tenant\"}")
 if echo "$TENANT_RESPONSE" | grep -q '"tenant"'; then
     TENANT_ID=$(echo "$TENANT_RESPONSE" | jq -r '.result.tenant.id')
     echo "   ✓ Tenant created: $TENANT_ID"
@@ -152,7 +153,8 @@ fi
 
 # Test 5: Create user
 echo "5. Testing user creation..."
-USER_RESPONSE=$(jsonrpc_call "create_user" '{"email": "test-'$(date +%s)'@example.com", "display_name": "Test User"}')
+USER_TIMESTAMP=$(date +%s)
+USER_RESPONSE=$(jsonrpc_call "create_user" "{\"email\": \"test-${USER_TIMESTAMP}@example.com\", \"display_name\": \"Test User\"}")
 if echo "$USER_RESPONSE" | grep -q '"user"'; then
     USER_ID=$(echo "$USER_RESPONSE" | jq -r '.result.user.id')
     echo "   ✓ User created: $USER_ID"
@@ -182,9 +184,10 @@ else
 fi
 
 # Test 8: Add user to tenant
+# Note: JSON-RPC responses have a "result" field on success
 echo "8. Testing add user to tenant..."
 ADD_USER_RESPONSE=$(jsonrpc_call "add_user_to_tenant" "{\"tenant_id\": \"$TENANT_ID\", \"user_id\": \"$USER_ID\", \"role\": \"admin\"}")
-if echo "$ADD_USER_RESPONSE" | grep -q '"success"' || echo "$ADD_USER_RESPONSE" | grep -q '"result"'; then
+if echo "$ADD_USER_RESPONSE" | grep -q '"result"'; then
     echo "   ✓ Add user to tenant passed"
 else
     echo "   ✗ Add user to tenant failed: $ADD_USER_RESPONSE"
@@ -194,7 +197,7 @@ fi
 # Test 9: Update tenant
 echo "9. Testing update tenant..."
 UPDATE_TENANT_RESPONSE=$(jsonrpc_call "update_tenant" "{\"id\": \"$TENANT_ID\", \"name\": \"Updated Test Tenant\"}")
-if echo "$UPDATE_TENANT_RESPONSE" | grep -q '"tenant"' || echo "$UPDATE_TENANT_RESPONSE" | grep -q '"result"'; then
+if echo "$UPDATE_TENANT_RESPONSE" | grep -q '"result"'; then
     echo "   ✓ Update tenant passed"
 else
     echo "   ✗ Update tenant failed: $UPDATE_TENANT_RESPONSE"
@@ -204,7 +207,7 @@ fi
 # Test 10: Update user
 echo "10. Testing update user..."
 UPDATE_USER_RESPONSE=$(jsonrpc_call "update_user" "{\"id\": \"$USER_ID\", \"display_name\": \"Updated Test User\"}")
-if echo "$UPDATE_USER_RESPONSE" | grep -q '"user"' || echo "$UPDATE_USER_RESPONSE" | grep -q '"result"'; then
+if echo "$UPDATE_USER_RESPONSE" | grep -q '"result"'; then
     echo "   ✓ Update user passed"
 else
     echo "   ✗ Update user failed: $UPDATE_USER_RESPONSE"
