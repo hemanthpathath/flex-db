@@ -8,6 +8,7 @@ A **Database-as-a-Service (DBaaS)** implemented in Python with JSON-RPC. This is
 - **Flexible data model**: Generic NodeTypes and Nodes with JSONB data storage
 - **Graph-like relationships**: Connect Nodes with typed Relationships
 - **JSON-RPC API**: Full CRUD operations with pagination support
+- **REST API Wrapper**: FastAPI-based REST facade with Swagger UI documentation
 - **PostgreSQL backend**: Robust, production-ready database
 - **Async/await**: Built with asyncio for high-performance I/O
 
@@ -15,6 +16,9 @@ A **Database-as-a-Service (DBaaS)** implemented in Python with JSON-RPC. This is
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│                    REST API (FastAPI)                       │
+│  Optional: Swagger UI at /docs, ReDoc at /redoc             │
+├─────────────────────────────────────────────────────────────┤
 │                      JSON-RPC API                           │
 │  (TenantService, UserService, NodeTypeService,              │
 │   NodeService, RelationshipService)                         │
@@ -63,6 +67,14 @@ python/
 │       ├── errors.py       # Error mapping
 │       ├── handlers.py     # JSON-RPC method handlers
 │       └── server.py       # aiohttp server setup
+├── rest_wrapper/           # REST API facade (NEW)
+│   ├── __init__.py
+│   ├── main.py             # FastAPI application
+│   ├── config.py           # REST wrapper configuration
+│   ├── client.py           # JSON-RPC client
+│   ├── models.py           # Pydantic request/response models
+│   ├── routers/            # REST endpoint routers
+│   └── tests/              # REST wrapper tests
 ├── scripts/
 │   └── start.sh            # Quick start script
 ├── main.py                 # Main entry point
@@ -487,6 +499,62 @@ print(result)
 | API Definition | Protocol Buffers | JSON-RPC methods |
 
 Both backends provide identical functionality and share the same database schema.
+
+## REST API Wrapper
+
+The Python backend includes an optional REST API wrapper built with FastAPI that provides:
+
+- **RESTful endpoints** for all JSON-RPC methods
+- **Swagger UI** at `/docs` for interactive API exploration
+- **ReDoc** at `/redoc` for alternative API documentation
+- **OpenAPI schema** at `/openapi.json`
+- **Pydantic validation** for all request/response models
+
+### Running the REST Wrapper
+
+```bash
+# First, start the JSON-RPC backend
+python main.py
+
+# In another terminal, start the REST wrapper
+pip install -r rest_wrapper/requirements.txt
+PYTHONPATH=. uvicorn rest_wrapper.main:app --host 0.0.0.0 --port 8000
+```
+
+### REST API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/tenants` | Create a tenant |
+| GET | `/tenants/{id}` | Get a tenant |
+| PUT | `/tenants/{id}` | Update a tenant |
+| DELETE | `/tenants/{id}` | Delete a tenant |
+| GET | `/tenants` | List tenants |
+| POST | `/users` | Create a user |
+| GET | `/users/{id}` | Get a user |
+| PUT | `/users/{id}` | Update a user |
+| DELETE | `/users/{id}` | Delete a user |
+| GET | `/users` | List users |
+| POST | `/tenants/{tenant_id}/users` | Add user to tenant |
+| DELETE | `/tenants/{tenant_id}/users/{user_id}` | Remove user from tenant |
+| GET | `/tenants/{tenant_id}/users` | List tenant users |
+| POST | `/tenants/{tenant_id}/node-types` | Create a node type |
+| GET | `/tenants/{tenant_id}/node-types/{id}` | Get a node type |
+| PUT | `/tenants/{tenant_id}/node-types/{id}` | Update a node type |
+| DELETE | `/tenants/{tenant_id}/node-types/{id}` | Delete a node type |
+| GET | `/tenants/{tenant_id}/node-types` | List node types |
+| POST | `/tenants/{tenant_id}/nodes` | Create a node |
+| GET | `/tenants/{tenant_id}/nodes/{id}` | Get a node |
+| PUT | `/tenants/{tenant_id}/nodes/{id}` | Update a node |
+| DELETE | `/tenants/{tenant_id}/nodes/{id}` | Delete a node |
+| GET | `/tenants/{tenant_id}/nodes` | List nodes |
+| POST | `/tenants/{tenant_id}/relationships` | Create a relationship |
+| GET | `/tenants/{tenant_id}/relationships/{id}` | Get a relationship |
+| PUT | `/tenants/{tenant_id}/relationships/{id}` | Update a relationship |
+| DELETE | `/tenants/{tenant_id}/relationships/{id}` | Delete a relationship |
+| GET | `/tenants/{tenant_id}/relationships` | List relationships |
+
+For more details, see [rest_wrapper/README.md](rest_wrapper/README.md).
 
 ## License
 
