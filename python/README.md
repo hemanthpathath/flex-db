@@ -30,7 +30,7 @@ A **Database-as-a-Service (DBaaS)** implemented in Python with JSON-RPC. This is
 │  (PostgreSQL implementations with asyncpg)                  │
 ├─────────────────────────────────────────────────────────────┤
 │                      PostgreSQL                             │
-│  (tenants, users, tenant_users, node_types, nodes,         │
+│  (tenants, users, tenant_users, node_types, nodes,          │
 │   relationships)                                            │
 └─────────────────────────────────────────────────────────────┘
 ```
