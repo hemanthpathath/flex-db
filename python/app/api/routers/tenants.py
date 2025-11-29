@@ -2,8 +2,7 @@
 Tenant REST API router.
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, Query
 
 from app.api.models import (
     TenantCreate,
@@ -89,9 +88,10 @@ async def update_tenant(tenant_id: str, tenant: TenantUpdate):
     try:
         if _tenant_service is None:
             raise RuntimeError("Tenant service not initialized")
-        slug = tenant.slug if tenant.slug is not None else ""
-        name = tenant.name if tenant.name is not None else ""
-        status = tenant.status if tenant.status is not None else ""
+        # Only pass non-None values to service (service layer handles empty strings)
+        slug = tenant.slug or ""
+        name = tenant.name or ""
+        status = tenant.status or ""
         tenant_obj = await _tenant_service.update(tenant_id, slug, name, status)
         return TenantResponse(tenant=tenant_obj.to_dict())
     except Exception as e:

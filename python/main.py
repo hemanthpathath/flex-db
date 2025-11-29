@@ -151,10 +151,12 @@ def create_app() -> FastAPI:
     )
     
     # Add CORS middleware
+    # Note: allow_origins=["*"] with allow_credentials=True is insecure for production
+    # In production, specify exact origins: allow_origins=["https://yourdomain.com"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
+        allow_origins=["*"],  # TODO: Restrict to specific origins in production
+        allow_credentials=False,  # Set to False when using allow_origins=["*"]
         allow_methods=["*"],
         allow_headers=["*"],
     )

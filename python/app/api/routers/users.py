@@ -2,7 +2,7 @@
 User REST API router.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
 from app.api.models import (
     UserCreate,
@@ -91,8 +91,9 @@ async def update_user(user_id: str, user: UserUpdate):
     try:
         if _user_service is None:
             raise RuntimeError("User service not initialized")
-        email = user.email if user.email is not None else ""
-        display_name = user.display_name if user.display_name is not None else ""
+        # Only pass non-None values to service (service layer handles empty strings)
+        email = user.email or ""
+        display_name = user.display_name or ""
         user_obj = await _user_service.update(user_id, email, display_name)
         return UserResponse(user=user_obj.to_dict())
     except Exception as e:

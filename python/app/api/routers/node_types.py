@@ -2,7 +2,7 @@
 NodeType REST API router.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
 from app.api.models import (
     NodeTypeCreate,
@@ -94,9 +94,10 @@ async def update_node_type(tenant_id: str, node_type_id: str, node_type: NodeTyp
     try:
         if _nodetype_service is None:
             raise RuntimeError("Node type service not initialized")
-        name = node_type.name if node_type.name is not None else ""
-        description = node_type.description if node_type.description is not None else ""
-        schema = node_type.json_schema if node_type.json_schema is not None else ""
+        # Only pass non-None values to service (service layer handles empty strings)
+        name = node_type.name or ""
+        description = node_type.description or ""
+        schema = node_type.json_schema or ""
         node_type_obj = await _nodetype_service.update(tenant_id, node_type_id, name, description, schema)
         return NodeTypeResponse(node_type=node_type_obj.to_dict())
     except Exception as e:

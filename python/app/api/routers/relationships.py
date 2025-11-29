@@ -2,7 +2,7 @@
 Relationship REST API router.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from typing import Optional
 
 from app.api.models import (
@@ -96,8 +96,9 @@ async def update_relationship(tenant_id: str, relationship_id: str, relationship
     try:
         if _relationship_service is None:
             raise RuntimeError("Relationship service not initialized")
-        rel_type = relationship.relationship_type if relationship.relationship_type is not None else ""
-        data = relationship.data if relationship.data is not None else ""
+        # Only pass non-None values to service (service layer handles empty strings)
+        rel_type = relationship.relationship_type or ""
+        data = relationship.data or ""
         rel_obj = await _relationship_service.update(tenant_id, relationship_id, rel_type, data)
         return RelationshipResponse(relationship=rel_obj.to_dict())
     except Exception as e:

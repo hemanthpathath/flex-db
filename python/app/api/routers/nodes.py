@@ -2,7 +2,7 @@
 Node REST API router.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from typing import Optional
 
 from app.api.models import (
@@ -90,7 +90,8 @@ async def update_node(tenant_id: str, node_id: str, node: NodeUpdate):
     try:
         if _node_service is None:
             raise RuntimeError("Node service not initialized")
-        data = node.data if node.data is not None else ""
+        # Only pass non-None values to service (service layer handles empty strings)
+        data = node.data or ""
         node_obj = await _node_service.update(tenant_id, node_id, data)
         return NodeResponse(node=node_obj.to_dict())
     except Exception as e:
