@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: flex-db-python-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dbaas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  flex-db-python:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flex-db-python
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: dbaas
+      DB_SSL_MODE: disable
+      JSONRPC_HOST: 0.0.0.0
+      JSONRPC_PORT: 5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
