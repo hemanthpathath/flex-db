@@ -22,7 +22,9 @@ services:
       dockerfile: Dockerfile
     container_name: flex-db-python
     ports:
-      - "5000:5000"
+      # Map host port 5001 to container port 5000 to avoid conflicts with other services
+      # Access the service at http://localhost:5001
+      - "5001:5000"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432

@@ -66,6 +66,7 @@ ENV DB_HOST=localhost \
 EXPOSE 5000
 
 # Health check
+# Uses JSONRPC_PORT environment variable to support custom port configuration
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import os, urllib.request; port = os.getenv('JSONRPC_PORT', '5000'); urllib.request.urlopen(f'http://localhost:{port}/health')" || exit 1
 
