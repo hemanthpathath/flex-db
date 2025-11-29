@@ -44,10 +44,10 @@ Both implementations provide full CRUD operations with pagination support and sh
 │  (Business logic, validation)                               │
 ├─────────────────────────────────────────────────────────────┤
 │                   Repository Layer                          │
-│  (PostgreSQL implementations with pgx)                     │
+│  (PostgreSQL implementations with pgx)                      │
 ├─────────────────────────────────────────────────────────────┤
 │                      PostgreSQL                             │
-│  (tenants, users, tenant_users, node_types, nodes,         │
+│  (tenants, users, tenant_users, node_types, nodes,          │
 │   relationships)                                            │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -58,27 +58,27 @@ Both implementations provide full CRUD operations with pagination support and sh
 ┌─────────────────────────────────────────────────────────────┐
 │              Unified FastAPI Service (Port 5000)            │
 │  ┌──────────────────────┐  ┌──────────────────────┐         │
-│  │   REST API          │  │   JSON-RPC API       │         │
-│  │   • /tenants       │  │   • /jsonrpc        │         │
-│  │   • /users         │  │                      │         │
-│  │   • /nodes         │  │                      │         │
-│  │   • /relationships │  │                      │         │
-│  │   • /docs (Swagger)│  │                      │         │
-│  │   • /redoc         │  │                      │         │
-│  └──────────┬─────────┘  └──────────┬──────────┘         │
-│             │                       │                      │
-│             └───────────┬───────────┘                      │
-│                         │                                  │
-├─────────────────────────┼──────────────────────────────────┤
+│  │   REST API           │  │   JSON-RPC API       │         │
+│  │   • /tenants         │  │   • /jsonrpc         │         │
+│  │   • /users           │  │                      │         │
+│  │   • /nodes           │  │                      │         │
+│  │   • /relationships   │  │                      │         │
+│  │   • /docs (Swagger)  │  │                      │         │
+│  │   • /redoc           │  │                      │         │
+│  └──────────┬───────--──┘  └──────────┬────────-──┘         │
+│             │                         │                     │
+│             └───────────┬─────────--──┘                     │
+│                         │                                   │
+├─────────────────────────┼──────────────────────────────────-┤
 │                     Service Layer                           │
 │  (TenantService, UserService, NodeTypeService,              │
-│   NodeService, RelationshipService)                        │
+│   NodeService, RelationshipService)                         │
 ├─────────────────────────────────────────────────────────────┤
 │                   Repository Layer                          │
 │  (PostgreSQL implementations with asyncpg)                  │
 ├─────────────────────────────────────────────────────────────┤
 │                      PostgreSQL                             │
-│  (tenants, users, tenant_users, node_types, nodes,         │
+│  (tenants, users, tenant_users, node_types, nodes,          │
 │   relationships)                                            │
 └─────────────────────────────────────────────────────────────┘
 ```
