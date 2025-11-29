@@ -5,7 +5,7 @@ JSON-RPC server implementation using aiohttp.
 import json
 import logging
 from aiohttp import web
-from jsonrpcserver import dispatch
+from jsonrpcserver import async_dispatch
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ async def handle_jsonrpc(request: web.Request) -> web.Response:
     """Handle JSON-RPC requests."""
     try:
         body = await request.text()
-        response = await dispatch(body)
+        response = await async_dispatch(body)
         
         if response is None:
             # Notification (no response needed)
@@ -24,7 +24,7 @@ async def handle_jsonrpc(request: web.Request) -> web.Response:
             text=response,
             content_type="application/json",
         )
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         error_response = {
             "jsonrpc": "2.0",
             "error": {"code": -32700, "message": "Parse error"},
