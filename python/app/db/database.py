@@ -5,6 +5,7 @@ Database connection and migrations module.
 import asyncio
 import logging
 import os
+import ssl
 from pathlib import Path
 from typing import Optional
 
@@ -36,7 +37,6 @@ async def connect(cfg: Config) -> Database:
         elif cfg.ssl_mode == "prefer":
             ssl_context = "prefer"
         elif cfg.ssl_mode == "verify-ca" or cfg.ssl_mode == "verify-full":
-            import ssl
             ssl_context = ssl.create_default_context()
         # "disable" is the default (ssl_context = None)
 
