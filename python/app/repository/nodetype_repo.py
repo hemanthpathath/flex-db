@@ -2,10 +2,9 @@
 NodeType repository implementation.
 """
 
-import json
 import uuid
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import asyncpg
 
@@ -26,10 +25,10 @@ class NodeTypeRepository:
         node_type.created_at = datetime.now()
         node_type.updated_at = datetime.now()
 
-        # Parse schema to JSON or None
-        schema_json = None
-        if node_type.schema:
-            schema_json = json.loads(node_type.schema)
+        # Parse schema to JSON or None - preserve empty/falsy JSON schemas like '{}' or '[]'
+        schema_value = None
+        if node_type.schema is not None and node_type.schema != "":
+            schema_value = node_type.schema
 
         query = """
             INSERT INTO node_types (id, tenant_id, name, description, schema, created_at, updated_at)
@@ -41,7 +40,7 @@ class NodeTypeRepository:
             row = await conn.fetchrow(
                 query,
                 node_type.id, node_type.tenant_id, node_type.name, node_type.description,
-                json.dumps(schema_json) if schema_json else None,
+                schema_value,
                 node_type.created_at, node_type.updated_at
             )
 
@@ -67,9 +66,10 @@ class NodeTypeRepository:
         """Update an existing node type."""
         node_type.updated_at = datetime.now()
 
-        schema_json = None
-        if node_type.schema:
-            schema_json = json.loads(node_type.schema)
+        # Preserve empty/falsy JSON schemas like '{}' or '[]'
+        schema_value = None
+        if node_type.schema is not None and node_type.schema != "":
+            schema_value = node_type.schema
 
         query = """
             UPDATE node_types 
@@ -82,7 +82,7 @@ class NodeTypeRepository:
             row = await conn.fetchrow(
                 query,
                 node_type.id, node_type.tenant_id, node_type.name, node_type.description,
-                json.dumps(schema_json) if schema_json else None,
+                schema_value,
                 node_type.updated_at
             )
 

@@ -29,6 +29,17 @@ class Database:
 async def connect(cfg: Config) -> Database:
     """Create a new database connection pool."""
     try:
+        # Map SSL mode to asyncpg ssl parameter
+        ssl_context = None
+        if cfg.ssl_mode == "require":
+            ssl_context = "require"
+        elif cfg.ssl_mode == "prefer":
+            ssl_context = "prefer"
+        elif cfg.ssl_mode == "verify-ca" or cfg.ssl_mode == "verify-full":
+            import ssl
+            ssl_context = ssl.create_default_context()
+        # "disable" is the default (ssl_context = None)
+
         pool = await asyncpg.create_pool(
             host=cfg.host,
             port=cfg.port,
@@ -37,6 +48,7 @@ async def connect(cfg: Config) -> Database:
             database=cfg.db_name,
             min_size=1,
             max_size=10,
+            ssl=ssl_context,
         )
         # Test the connection
         async with pool.acquire() as conn:
