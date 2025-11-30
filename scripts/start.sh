@@ -7,6 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+POSTGRES_CONTAINER="flex-db-postgres"
 
 cd "$PROJECT_DIR"
 
@@ -37,7 +38,7 @@ pip install -r requirements.txt -q
 
 # Check if PostgreSQL is running (assuming Docker setup)
 if command -v docker &> /dev/null; then
-    if ! docker ps --format '{{.Names}}' | grep -q "^flex-db-postgres$"; then
+    if ! docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
         echo "Starting PostgreSQL container..."
         cd "$PROJECT_DIR"
         if docker compose --profile dev up -d postgres 2>/dev/null; then
@@ -48,7 +49,7 @@ if command -v docker &> /dev/null; then
             max_attempts=30
             attempt=0
             while [ $attempt -lt $max_attempts ]; do
-                if docker exec flex-db-postgres pg_isready -U postgres &> /dev/null; then
+                if docker exec "${POSTGRES_CONTAINER}" pg_isready -U postgres &> /dev/null; then
                     echo "PostgreSQL is ready"
                     break
                 fi

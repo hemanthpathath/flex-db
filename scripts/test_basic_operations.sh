@@ -205,3 +205,4 @@ echo "- Tenant 2 ID: $TENANT2_ID"
 echo "- User 1 ID: $USER1_ID"
 echo "- User 2 ID: $USER2_ID"
 
+exit 0

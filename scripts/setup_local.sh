@@ -7,6 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+POSTGRES_CONTAINER="flex-db-postgres"
 
 cd "$PROJECT_DIR"
 
@@ -161,7 +162,7 @@ echo "Step 5: Starting PostgreSQL database..."
 echo ""
 
 # Check if PostgreSQL container is already running
-if docker ps --format '{{.Names}}' | grep -q "^flex-db-postgres$"; then
+if docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
     print_info "PostgreSQL container is already running"
 else
     print_info "Starting PostgreSQL container..."
@@ -174,7 +175,7 @@ else
         max_attempts=30
         attempt=0
         while [ $attempt -lt $max_attempts ]; do
-            if docker exec flex-db-postgres pg_isready -U postgres &> /dev/null; then
+            if docker exec "${POSTGRES_CONTAINER}" pg_isready -U postgres &> /dev/null; then
                 print_success "PostgreSQL is ready"
                 break
             fi
@@ -241,3 +242,5 @@ echo "  - Password: postgres"
 echo ""
 print_success "Ready to start developing!"
 
+
+exit 0

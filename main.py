@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up...")
     
     # Load environment variables from .env.local if it exists
-    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env.local")
+    env_file = os.path.join(os.path.dirname(__file__), ".env.local")
     if os.path.exists(env_file):
         load_dotenv(env_file)
         logger.info(f"Loaded environment from {env_file}")
