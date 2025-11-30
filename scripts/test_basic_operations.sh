@@ -1,19 +1,16 @@
 #!/bin/bash
 
 # Quick test script for basic operations
-# Make sure the server is running on http://localhost:5001 (Docker) or http://localhost:5000 (local)
+# Make sure the server is running on http://localhost:5000
 
-# Check if port 5001 is responding (Docker), otherwise try 5000 (local)
-if curl -s http://localhost:5001/health > /dev/null 2>&1; then
-    BASE_URL="http://localhost:5001/jsonrpc"
-    HEALTH_URL="http://localhost:5001/health"
-    PORT=5001
-elif curl -s http://localhost:5000/health > /dev/null 2>&1; then
+# Check if port 5000 is responding
+if curl -s http://localhost:5000/health > /dev/null 2>&1; then
     BASE_URL="http://localhost:5000/jsonrpc"
     HEALTH_URL="http://localhost:5000/health"
     PORT=5000
 else
-    echo "Error: Server not responding on port 5001 (Docker) or 5000 (local)"
+    echo "Error: Server not responding on port 5000"
+    echo "Make sure the server is running with: make setup-dev"
     exit 1
 fi
 

@@ -9,8 +9,11 @@ Complete guide for setting up and running flex-db locally.
 The easiest way to run everything:
 
 ```bash
-cd python
-docker compose up
+# Using the Makefile
+make setup-dev
+
+# Or directly with docker compose
+docker compose --profile dev up --build
 ```
 
 That's it! This will:
@@ -19,18 +22,15 @@ That's it! This will:
 - Auto-create databases and run migrations
 
 **Access the API:**
-- JSON-RPC: http://localhost:5001/jsonrpc
-- Health: http://localhost:5001/health
-- OpenRPC: http://localhost:5001/openrpc.json
-
-**Note:** Port 5001 is used because port 5000 is typically in use on macOS.
+- JSON-RPC: http://localhost:5000/jsonrpc
+- Health: http://localhost:5000/health
+- OpenRPC: http://localhost:5000/openrpc.json
 
 ### Option 2: Local Python Setup
 
 If you prefer to run Python directly on your machine:
 
 ```bash
-cd python
 ./scripts/setup_local.sh
 source venv/bin/activate
 python main.py
@@ -62,34 +62,40 @@ The setup script will:
 #### Step 1: Start Everything
 
 ```bash
-cd python
-docker compose up
+make setup-dev
+```
+
+Or manually:
+```bash
+docker compose --profile dev up --build
 ```
 
 To run in background:
 ```bash
-docker compose up -d
+docker compose --profile dev up --build -d
 ```
 
 #### Step 2: Verify It's Running
 
 ```bash
 # Health check
-curl http://localhost:5001/health
+curl http://localhost:5000/health
 
 # View logs
-docker compose logs -f
+make logs
+# or
+docker compose --profile dev logs -f
 ```
 
 #### Step 3: Stop Services
 
 ```bash
-docker compose down
+make stop
 ```
 
 **Clean up everything (including data):**
 ```bash
-docker compose down -v
+make clean
 ```
 
 ### Using Local Python
@@ -99,7 +105,6 @@ docker compose down -v
 Run the automated setup script:
 
 ```bash
-cd python
 ./scripts/setup_local.sh
 ```
 
@@ -151,7 +156,7 @@ This will test:
 #### Test 1: Health Check
 
 ```bash
-curl http://localhost:5001/health
+curl http://localhost:5000/health
 ```
 
 Expected: `{"status":"ok"}`
@@ -159,7 +164,7 @@ Expected: `{"status":"ok"}`
 #### Test 2: Create a Tenant
 
 ```bash
-curl -X POST http://localhost:5001/jsonrpc \
+curl -X POST http://localhost:5000/jsonrpc \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -177,7 +182,7 @@ curl -X POST http://localhost:5001/jsonrpc \
 #### Test 3: List All Tenants
 
 ```bash
-curl -X POST http://localhost:5001/jsonrpc \
+curl -X POST http://localhost:5000/jsonrpc \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -192,7 +197,7 @@ curl -X POST http://localhost:5001/jsonrpc \
 #### Test 4: Create a User
 
 ```bash
-curl -X POST http://localhost:5001/jsonrpc \
+curl -X POST http://localhost:5000/jsonrpc \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -208,7 +213,7 @@ curl -X POST http://localhost:5001/jsonrpc \
 #### Test 5: List All Users
 
 ```bash
-curl -X POST http://localhost:5001/jsonrpc \
+curl -X POST http://localhost:5000/jsonrpc \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -231,7 +236,7 @@ One of the key features of this architecture is that each tenant gets its own da
 Before creating a tenant:
 
 ```bash
-docker exec flex-db-python-postgres psql -U postgres -c "SELECT datname FROM pg_database WHERE datname LIKE 'dbaas%' ORDER BY datname;"
+docker exec flex-db-postgres psql -U postgres -c "SELECT datname FROM pg_database WHERE datname LIKE 'dbaas%' ORDER BY datname;"
 ```
 
 **Expected:** You should see at least `dbaas_control`.
@@ -245,7 +250,7 @@ Create a tenant via API (see Test 2 above).
 Check databases again:
 
 ```bash
-docker exec flex-db-python-postgres psql -U postgres -c "SELECT datname FROM pg_database WHERE datname LIKE 'dbaas%' ORDER BY datname;"
+docker exec flex-db-postgres psql -U postgres -c "SELECT datname FROM pg_database WHERE datname LIKE 'dbaas%' ORDER BY datname;"
 ```
 
 **Expected:** You should now see:
@@ -257,7 +262,7 @@ docker exec flex-db-python-postgres psql -U postgres -c "SELECT datname FROM pg_
 Check that the tenant is mapped to its database:
 
 ```bash
-docker exec flex-db-python-postgres psql -U postgres -d dbaas_control -c "SELECT t.slug, t.name, td.database_name FROM tenants t JOIN tenant_databases td ON t.id = td.tenant_id ORDER BY t.slug;"
+docker exec flex-db-postgres psql -U postgres -d dbaas_control -c "SELECT t.slug, t.name, td.database_name FROM tenants t JOIN tenant_databases td ON t.id = td.tenant_id ORDER BY t.slug;"
 ```
 
 ### Step 5: Verify Tenant Database Schema
@@ -265,7 +270,7 @@ docker exec flex-db-python-postgres psql -U postgres -d dbaas_control -c "SELECT
 Check that the tenant database has the correct tables:
 
 ```bash
-docker exec flex-db-python-postgres psql -U postgres -d dbaas_tenant_acme_corp -c "\dt"
+docker exec flex-db-postgres psql -U postgres -d dbaas_tenant_acme_corp -c "\dt"
 ```
 
 **Expected Tables:**
@@ -287,7 +292,7 @@ When you create a tenant, the system automatically:
 **Check Application Logs:**
 
 ```bash
-docker compose logs flex-db-python | grep -A 5 "Creating tenant database"
+docker compose --profile dev logs flex-db | grep -A 5 "Creating tenant database"
 ```
 
 ---
@@ -298,7 +303,7 @@ You can verify that the databases were created correctly:
 
 ```bash
 # Connect to PostgreSQL
-docker exec -it flex-db-python-postgres psql -U postgres
+docker exec -it flex-db-postgres psql -U postgres
 
 # List all databases
 \l
@@ -332,11 +337,11 @@ If you get "Permission denied" when running scripts:
 chmod +x scripts/*.sh
 ```
 
-### Port 5000/5001 Already in Use
+### Port 5000 Already in Use
 
 **For Docker Compose:**
-- Docker uses port 5001 by default (configured in `docker-compose.yml`)
-- If 5001 is also in use, edit `docker-compose.yml` and change the port mapping
+- Docker uses port 5000 by default (configured in `docker-compose.yml`)
+- If 5000 is in use, edit `docker-compose.yml` and change the port mapping
 
 **For Local Python:**
 - Change `JSONRPC_PORT` in `.env.local` to a different port
@@ -352,12 +357,12 @@ chmod +x scripts/*.sh
 
 - The application should auto-create it, but you can manually create it:
   ```bash
-  docker exec -it flex-db-python-postgres psql -U postgres -c "CREATE DATABASE dbaas_control;"
+  docker exec -it flex-db-postgres psql -U postgres -c "CREATE DATABASE dbaas_control;"
   ```
 
 ### Tenant Database Creation Fails
 
-- Check PostgreSQL logs: `docker logs flex-db-python-postgres`
+- Check PostgreSQL logs: `docker logs flex-db-postgres`
 - Ensure the user has permission to create databases
 
 ### PostgreSQL Won't Start
@@ -366,11 +371,11 @@ chmod +x scripts/*.sh
 # Check if port 5432 is in use
 lsof -i :5432
 
-# Stop any existing PostgreSQL
-docker compose down
+# Stop any existing containers
+make stop
 
 # Start again
-docker compose up -d postgres
+make setup-dev
 ```
 
 ### Python Version Issues
@@ -393,7 +398,7 @@ Once you've verified tenant and user creation works:
 
 2. **Explore the OpenRPC spec**:
    ```bash
-   curl http://localhost:5001/openrpc.json > openrpc.json
+   curl http://localhost:5000/openrpc.json > openrpc.json
    ```
 
 3. **Use the interactive OpenRPC playground**:
@@ -416,34 +421,39 @@ To stop and remove everything:
 # Stop the application (Ctrl+C if running in foreground)
 
 # Stop and remove containers
-docker compose down
+make stop
 
 # Remove database volume (WARNING: deletes all data)
-docker compose down -v
+make clean
 ```
 
 ---
 
 ## Quick Reference Commands
 
-**Docker Compose:**
+**Development:**
 ```bash
-docker compose up              # Start everything
-docker compose up -d           # Start in background
-docker compose down            # Stop everything
-docker compose logs -f         # View logs
-docker compose ps              # Check status
+make setup-dev             # Start development environment
+make stop                  # Stop all containers
+make clean                 # Remove all containers and data
+make logs                  # View logs
+make status                # Check container status
+```
+
+**Testing:**
+```bash
+make test-all              # Run all tests in isolation
 ```
 
 **Database Verification:**
 ```bash
 # List all databases
-docker exec flex-db-python-postgres psql -U postgres -c "\l" | grep dbaas
+docker exec flex-db-postgres psql -U postgres -c "\l" | grep dbaas
 
 # List all tenants
-docker exec flex-db-python-postgres psql -U postgres -d dbaas_control -c "SELECT slug, name FROM tenants;"
+docker exec flex-db-postgres psql -U postgres -d dbaas_control -c "SELECT slug, name FROM tenants;"
 
 # List tenant-to-database mappings
-docker exec flex-db-python-postgres psql -U postgres -d dbaas_control -c "SELECT t.slug, td.database_name FROM tenants t JOIN tenant_databases td ON t.id = td.tenant_id;"
+docker exec flex-db-postgres psql -U postgres -d dbaas_control -c "SELECT t.slug, td.database_name FROM tenants t JOIN tenant_databases td ON t.id = td.tenant_id;"
 ```
 

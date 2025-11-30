@@ -6,7 +6,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$SCRIPT_DIR"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_DIR"
 
@@ -60,7 +60,7 @@ else
 fi
 
 # Check Docker Compose
-if command -v docker-compose &> /dev/null || docker compose version &> /dev/null; then
+if docker compose version &> /dev/null; then
     print_success "Docker Compose found"
 else
     print_error "Docker Compose is not installed. Please install Docker Compose"
@@ -161,11 +161,11 @@ echo "Step 5: Starting PostgreSQL database..."
 echo ""
 
 # Check if PostgreSQL container is already running
-if docker ps --format '{{.Names}}' | grep -q "^flex-db-python-postgres$"; then
+if docker ps --format '{{.Names}}' | grep -q "^flex-db-postgres$"; then
     print_info "PostgreSQL container is already running"
 else
     print_info "Starting PostgreSQL container..."
-    if docker-compose up -d postgres 2>/dev/null || docker compose up -d postgres 2>/dev/null; then
+    if docker compose --profile dev up -d postgres 2>/dev/null; then
         print_success "PostgreSQL container started"
         print_info "Waiting for PostgreSQL to be ready..."
         sleep 5
@@ -174,7 +174,7 @@ else
         max_attempts=30
         attempt=0
         while [ $attempt -lt $max_attempts ]; do
-            if docker exec flex-db-python-postgres pg_isready -U postgres &> /dev/null; then
+            if docker exec flex-db-postgres pg_isready -U postgres &> /dev/null; then
                 print_success "PostgreSQL is ready"
                 break
             fi
