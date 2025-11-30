@@ -269,7 +269,7 @@ class TenantDatabaseManager:
         if not control_db:
             control_db = await connect_control_db(self.cfg)
 
-        # Get migrations already applied to this tenant (single query)
+        # Get migrations already applied to this tenant (from control DB)
         async with control_db.pool.acquire() as control_conn:
             applied_rows = await control_conn.fetch(
                 "SELECT version FROM tenant_migrations WHERE tenant_id = $1",
@@ -285,6 +285,15 @@ class TenantDatabaseManager:
                     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 )
             """)
+            
+            # Also check tenant database's schema_migrations table
+            tenant_applied_rows = await conn.fetch(
+                "SELECT version FROM schema_migrations"
+            )
+            tenant_applied = {row["version"] for row in tenant_applied_rows}
+            
+            # Combine both sources to determine what's already applied
+            all_applied = applied | tenant_applied
 
             # Read and apply migrations
             migrations_dir = Path(__file__).parent / "tenant_migrations"
@@ -299,7 +308,7 @@ class TenantDatabaseManager:
 
             for filename in up_files:
                 version = filename.replace(".up.sql", "")
-                if version in applied:
+                if version in all_applied:
                     logger.debug(f"Tenant {tenant_id} migration {version} already applied, skipping")
                     continue
 
@@ -309,9 +318,9 @@ class TenantDatabaseManager:
                 # Execute the migration in a transaction
                 async with conn.transaction():
                     await conn.execute(content)
-                    # Record in tenant database
+                    # Record in tenant database (use ON CONFLICT to handle race conditions)
                     await conn.execute(
-                        "INSERT INTO schema_migrations (version) VALUES ($1)",
+                        "INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT (version) DO NOTHING",
                         version
                     )
                     new_migrations.append(version)
